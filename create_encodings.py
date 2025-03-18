@@ -2,29 +2,41 @@ import face_recognition
 import os
 import pickle
 
+# Folder dataset
 dataset_folder = "dataset/"
-encodings_file = "encodings.pkl"
 
-known_encodings = []
-known_names = []
+# List untuk menyimpan encoding dan nama wajah
+known_face_encodings = []
+known_face_names = []
 
+# Loop melalui semua folder di dataset
 for student_folder in os.listdir(dataset_folder):
     student_path = os.path.join(dataset_folder, student_folder)
+    
+    # Pastikan ini adalah folder
     if not os.path.isdir(student_path):
         continue
 
-    for image_name in os.listdir(student_path):
-        image_path = os.path.join(student_path, image_name)
-        image = face_recognition.load_image_file(image_path)
-        face_encodings = face_recognition.face_encodings(image)
+    # Ekstraksi nama dan NIM dari nama folder
+    name, nim = student_folder.split("_")
+
+    # Loop melalui semua gambar wajah di folder mahasiswa
+    for face_image_name in os.listdir(student_path):
+        face_image_path = os.path.join(student_path, face_image_name)
         
-        if face_encodings:
-            known_encodings.append(face_encodings[0])
-            known_names.append(student_folder)
+        # Load gambar wajah
+        image = face_recognition.load_image_file(face_image_path)
+        
+        # Buat encoding wajah
+        encodings = face_recognition.face_encodings(image)
+        
+        # Jika encoding berhasil dibuat, simpan ke list
+        if encodings:
+            known_face_encodings.append(encodings[0])
+            known_face_names.append(f"{name}_{nim}")
 
-data = {"encodings": known_encodings, "names": known_names}
+# Simpan encoding dan nama ke file pickle
+with open("encodings.pkl", "wb") as f:
+    pickle.dump({"encodings": known_face_encodings, "names": known_face_names}, f)
 
-with open(encodings_file, "wb") as f:
-    pickle.dump(data, f)
-
-print("Encodings berhasil dibuat!")
+print("Encoding wajah selesai dan disimpan ke encodings.pkl!")
